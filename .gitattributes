@@ -1,0 +1,6 @@
+# Preserve byte-identical validated SQL and evidence when cloning.
+sql/** -text
+tests/** -text
+tools/** -text
+legacy_views/*.sql -text
+evidence/** -text

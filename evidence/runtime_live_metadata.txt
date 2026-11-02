@@ -1,0 +1,243 @@
+ServerName                                                                                                                       ProductVersion
+-------------------------------------------------------------------------------------------------------------------------------- --------------------------------------------------------------------------------------------------------------------------------
+Phuccomputer                                                                                                                     16.0.1000.6
+
+name                                                                                                                             compatibility_level state_desc                                                   is_read_only
+-------------------------------------------------------------------------------------------------------------------------------- ------------------- ------------------------------------------------------------ ------------
+OnlineRetailDB                                                                                                                   160                 ONLINE                                                       0
+
+name                                                                                                                             RowCountObserved
+-------------------------------------------------------------------------------------------------------------------------------- --------------------
+Categories                                                                                                                       5
+Customers                                                                                                                        1500
+OrderAddresses                                                                                                                   10120
+OrderItems                                                                                                                       15765
+Orders                                                                                                                           8096
+OrderStatusHistory                                                                                                               31187
+Payments                                                                                                                         8584
+Products                                                                                                                         50
+Refunds                                                                                                                          827
+ReturnItems                                                                                                                      814
+Returns                                                                                                                          699
+sysdiagrams                                                                                                                      1
+
+type_desc                                                    SchemaName                                                                                                                       name                                                                                                                             definition
+------------------------------------------------------------ -------------------------------------------------------------------------------------------------------------------------------- -------------------------------------------------------------------------------------------------------------------------------- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SQL_SCALAR_FUNCTION                                          dbo                                                                                                                              fn_diagramobjects                                                                                                                
+	CREATE FUNCTION dbo.fn_diagramobjects() 
+	RETURNS int
+	WITH EXECUTE AS N'dbo'
+	AS
+	BEGIN
+		declare @id_upgraddiagrams		int
+		declare @id_sysdiagrams			int
+		declare @id_helpdiagrams		int
+		declare @id_helpdiagramdefinition	int
+		declare @id_cre
+SQL_STORED_PROCEDURE                                         dbo                                                                                                                              sp_alterdiagram                                                                                                                  
+	CREATE PROCEDURE dbo.sp_alterdiagram
+	(
+		@diagramname 	sysname,
+		@owner_id	int	= null,
+		@version 	int,
+		@definition 	varbinary(max)
+	)
+	WITH EXECUTE AS 'dbo'
+	AS
+	BEGIN
+		set nocount on
+	
+		declare @theId 			int
+		declare @retval 		int
+SQL_STORED_PROCEDURE                                         dbo                                                                                                                              sp_creatediagram                                                                                                                 
+	CREATE PROCEDURE dbo.sp_creatediagram
+	(
+		@diagramname 	sysname,
+		@owner_id		int	= null, 	
+		@version 		int,
+		@definition 	varbinary(max)
+	)
+	WITH EXECUTE AS 'dbo'
+	AS
+	BEGIN
+		set nocount on
+	
+		declare @theId int
+		declare @retval int
+SQL_STORED_PROCEDURE                                         dbo                                                                                                                              sp_dropdiagram                                                                                                                   
+	CREATE PROCEDURE dbo.sp_dropdiagram
+	(
+		@diagramname 	sysname,
+		@owner_id	int	= null
+	)
+	WITH EXECUTE AS 'dbo'
+	AS
+	BEGIN
+		set nocount on
+		declare @theId 			int
+		declare @IsDbo 			int
+		
+		declare @UIDFound 		int
+		declare @DiagId			in
+SQL_STORED_PROCEDURE                                         dbo                                                                                                                              sp_helpdiagramdefinition                                                                                                         
+	CREATE PROCEDURE dbo.sp_helpdiagramdefinition
+	(
+		@diagramname 	sysname,
+		@owner_id	int	= null 		
+	)
+	WITH EXECUTE AS N'dbo'
+	AS
+	BEGIN
+		set nocount on
+
+		declare @theId 		int
+		declare @IsDbo 		int
+		declare @DiagId		int
+		declare @UIDF
+SQL_STORED_PROCEDURE                                         dbo                                                                                                                              sp_helpdiagrams                                                                                                                  
+	CREATE PROCEDURE dbo.sp_helpdiagrams
+	(
+		@diagramname sysname = NULL,
+		@owner_id int = NULL
+	)
+	WITH EXECUTE AS N'dbo'
+	AS
+	BEGIN
+		DECLARE @user sysname
+		DECLARE @dboLogin bit
+		EXECUTE AS CALLER;
+			SET @user = USER_NAME();
+			SET @dboL
+SQL_STORED_PROCEDURE                                         dbo                                                                                                                              sp_renamediagram                                                                                                                 
+	CREATE PROCEDURE dbo.sp_renamediagram
+	(
+		@diagramname 		sysname,
+		@owner_id		int	= null,
+		@new_diagramname	sysname
+	
+	)
+	WITH EXECUTE AS 'dbo'
+	AS
+	BEGIN
+		set nocount on
+		declare @theId 			int
+		declare @IsDbo 			int
+		
+		declare @UI
+SQL_STORED_PROCEDURE                                         dbo                                                                                                                              sp_upgraddiagrams                                                                                                                
+	CREATE PROCEDURE dbo.sp_upgraddiagrams
+	AS
+	BEGIN
+		IF OBJECT_ID(N'dbo.sysdiagrams') IS NOT NULL
+			return 0;
+	
+		CREATE TABLE dbo.sysdiagrams
+		(
+			name sysname NOT NULL,
+			principal_id int NOT NULL,	-- we may change it to varbinary(85)
+			
+VIEW                                                         dbo                                                                                                                              vw_CustomerOrders                                                                                                                CREATE VIEW vw_CustomerOrders 
+AS
+SELECT c.CustomerID, c.FirstName, c.LastName, COUNT(o.OrderID) AS TotalOrders,
+SUM(oi.Quantity * p.Price) as TotalAmount
+FROM Customers c 
+INNER JOIN Orders o ON c.CustomerID = o.CustomerID
+INNER JOIN OrderItems oi O
+VIEW                                                         dbo                                                                                                                              vw_ProductDeails                                                                                                                 CREATE VIEW vw_ProductDeails AS
+SELECT p.ProductID, p.ProductName, p.Price, p.Stock, c.CategoryName
+FROM Products p INNER JOIN Categories c
+ON p.CategoryID = c.CategoryID;
+VIEW                                                         dbo                                                                                                                              vw_RecentOrders                                                                                                                  CREATE VIEW vw_RecentOrders 
+AS
+SELECT o.OrderID, o.OrderDate, c.CustomerID, c.FirstName, c.LastName,
+SUM(oi.Quantity * oi.Price) as OrderAmount
+FROM Customers c 
+INNER JOIN Orders o ON c.CustomerID = o.CustomerID
+INNER JOIN OrderItems oi ON o.OrderI
+
+ReferencingSchema                                                                                                                ReferencingObject                                                                                                                referenced_schema_name                                                                                                           referenced_entity_name
+-------------------------------------------------------------------------------------------------------------------------------- -------------------------------------------------------------------------------------------------------------------------------- -------------------------------------------------------------------------------------------------------------------------------- --------------------------------------------------------------------------------------------------------------------------------
+dbo                                                                                                                              vw_ProductDeails                                                                                                                 NULL                                                                                                                             Categories
+dbo                                                                                                                              vw_CustomerOrders                                                                                                                NULL                                                                                                                             Customers
+dbo                                                                                                                              vw_RecentOrders                                                                                                                  NULL                                                                                                                             Customers
+dbo                                                                                                                              sp_upgraddiagrams                                                                                                                dbo                                                                                                                              dtproperties
+dbo                                                                                                                              vw_CustomerOrders                                                                                                                NULL                                                                                                                             OrderItems
+dbo                                                                                                                              vw_RecentOrders                                                                                                                  NULL                                                                                                                             OrderItems
+dbo                                                                                                                              vw_CustomerOrders                                                                                                                NULL                                                                                                                             Orders
+dbo                                                                                                                              vw_RecentOrders                                                                                                                  NULL                                                                                                                             Orders
+dbo                                                                                                                              vw_ProductDeails                                                                                                                 NULL                                                                                                                             Products
+dbo                                                                                                                              vw_CustomerOrders                                                                                                                NULL                                                                                                                             Products
+dbo                                                                                                                              sp_helpdiagrams                                                                                                                  NULL                                                                                                                             sysdiagrams
+dbo                                                                                                                              sp_upgraddiagrams                                                                                                                dbo                                                                                                                              sysdiagrams
+dbo                                                                                                                              sp_helpdiagramdefinition                                                                                                         dbo                                                                                                                              sysdiagrams
+dbo                                                                                                                              sp_creatediagram                                                                                                                 dbo                                                                                                                              sysdiagrams
+dbo                                                                                                                              sp_renamediagram                                                                                                                 dbo                                                                                                                              sysdiagrams
+dbo                                                                                                                              sp_alterdiagram                                                                                                                  dbo                                                                                                                              sysdiagrams
+dbo                                                                                                                              sp_dropdiagram                                                                                                                   dbo                                                                                                                              sysdiagrams
+dbo                                                                                                                              CK_Orders_Timeline                                                                                                               dbo                                                                                                                              Orders
+dbo                                                                                                                              CK_Orders_SalesChannel                                                                                                           dbo                                                                                                                              Orders
+dbo                                                                                                                              CK_Orders_CurrencyCode                                                                                                           dbo                                                                                                                              Orders
+dbo                                                                                                                              CK_Orders_OrderStatus                                                                                                            dbo                                                                                                                              Orders
+dbo                                                                                                                              CK_Orders_StateDates                                                                                                             dbo                                                                                                                              Orders
+dbo                                                                                                                              CK_Orders_ShippingFee                                                                                                            dbo                                                                                                                              Orders
+dbo                                                                                                                              CK_Orders_Timeline                                                                                                               dbo                                                                                                                              Orders
+dbo                                                                                                                              CK_Orders_StateDates                                                                                                             dbo                                                                                                                              Orders
+dbo                                                                                                                              CK_Orders_Timeline                                                                                                               dbo                                                                                                                              Orders
+dbo                                                                                                                              CK_Orders_StateDates                                                                                                             dbo                                                                                                                              Orders
+dbo                                                                                                                              CK_Orders_Timeline                                                                                                               dbo                                                                                                                              Orders
+dbo                                                                                                                              CK_Orders_StateDates                                                                                                             dbo                                                                                                                              Orders
+dbo                                                                                                                              CK__OrderAddr__Addre__12FDD1B2                                                                                                   dbo                                                                                                                              OrderAddresses
+dbo                                                                                                                              CK__OrderItem__LineN__17C286CF                                                                                                   dbo                                                                                                                              OrderItems
+dbo                                                                                                                              OrderItems                                                                                                                       dbo                                                                                                                              OrderItems
+dbo                                                                                                                              OrderItems                                                                                                                       dbo                                                                                                                              OrderItems
+dbo                                                                                                                              CK__OrderItem__Quant__19AACF41                                                                                                   dbo                                                                                                                              OrderItems
+dbo                                                                                                                              CK_Item_Discount                                                                                                                 dbo                                                                                                                              OrderItems
+dbo                                                                                                                              OrderItems                                                                                                                       dbo                                                                                                                              OrderItems
+dbo                                                                                                                              OrderItems                                                                                                                       dbo                                                                                                                              OrderItems
+dbo                                                                                                                              CK__OrderItem__UnitP__1A9EF37A                                                                                                   dbo                                                                                                                              OrderItems
+dbo                                                                                                                              CK_Item_Discount                                                                                                                 dbo                                                                                                                              OrderItems
+dbo                                                                                                                              CK__OrderItem__UnitC__1B9317B3                                                                                                   dbo                                                                                                                              OrderItems
+dbo                                                                                                                              OrderItems                                                                                                                       dbo                                                                                                                              OrderItems
+dbo                                                                                                                              OrderItems                                                                                                                       dbo                                                                                                                              OrderItems
+dbo                                                                                                                              CK__OrderItem__LineD__1D7B6025                                                                                                   dbo                                                                                                                              OrderItems
+dbo                                                                                                                              CK_Item_Discount                                                                                                                 dbo                                                                                                                              OrderItems
+dbo                                                                                                                              OrderItems                                                                                                                       dbo                                                                                                                              OrderItems
+dbo                                                                                                                              OrderItems                                                                                                                       dbo                                                                                                                              OrderItems
+dbo                                                                                                                              CK__OrderItem__Alloc__1F63A897                                                                                                   dbo                                                                                                                              OrderItems
+dbo                                                                                                                              CK_Item_Discount                                                                                                                 dbo                                                                                                                              OrderItems
+dbo                                                                                                                              OrderItems                                                                                                                       dbo                                                                                                                              OrderItems
+dbo                                                                                                                              CK__OrderItem__TaxAm__214BF109                                                                                                   dbo                                                                                                                              OrderItems
+dbo                                                                                                                              CK__Payments__Paymen__2610A626                                                                                                   dbo                                                                                                                              Payments
+dbo                                                                                                                              CK__Payments__Amount__2704CA5F                                                                                                   dbo                                                                                                                              Payments
+dbo                                                                                                                              CK__Payments__Paymen__28ED12D1                                                                                                   dbo                                                                                                                              Payments
+dbo                                                                                                                              CK_Payment_Date                                                                                                                  dbo                                                                                                                              Payments
+dbo                                                                                                                              CK_Payment_Date                                                                                                                  dbo                                                                                                                              Payments
+dbo                                                                                                                              CK_Payment_Date                                                                                                                  dbo                                                                                                                              Payments
+dbo                                                                                                                              Payments                                                                                                                         dbo                                                                                                                              Payments
+dbo                                                                                                                              CK_Return_Receipt                                                                                                                dbo                                                                                                                              Returns
+dbo                                                                                                                              CK_Return_Receipt                                                                                                                dbo                                                                                                                              Returns
+dbo                                                                                                                              CK__ReturnIte__Quant__3552E9B6                                                                                                   dbo                                                                                                                              ReturnItems
+dbo                                                                                                                              CK__ReturnIte__Eligi__36470DEF                                                                                                   dbo                                                                                                                              ReturnItems
+dbo                                                                                                                              CK_ReturnItem_Decision                                                                                                           dbo                                                                                                                              ReturnItems
+dbo                                                                                                                              CK__ReturnIte__Inspe__373B3228                                                                                                   dbo                                                                                                                              ReturnItems
+dbo                                                                                                                              CK_ReturnItem_Decision                                                                                                           dbo                                                                                                                              ReturnItems
+dbo                                                                                                                              CK__ReturnIte__Decis__39237A9A                                                                                                   dbo                                                                                                                              ReturnItems
+dbo                                                                                                                              CK_ReturnItem_Decision                                                                                                           dbo                                                                                                                              ReturnItems
+dbo                                                                                                                              CK_ReturnItem_Decision                                                                                                           dbo                                                                                                                              ReturnItems
+dbo                                                                                                                              CK_ReturnItem_Decision                                                                                                           dbo                                                                                                                              ReturnItems
+dbo                                                                                                                              CK_ReturnItem_Decision                                                                                                           dbo                                                                                                                              ReturnItems
+dbo                                                                                                                              CK__Refunds__Amount__3EDC53F0                                                                                                    dbo                                                                                                                              Refunds
+dbo                                                                                                                              CK__Refunds__RefundS__40C49C62                                                                                                   dbo                                                                                                                              Refunds
+dbo                                                                                                                              CK_Refund_Date                                                                                                                   dbo                                                                                                                              Refunds
+dbo                                                                                                                              CK_Refund_Date                                                                                                                   dbo                                                                                                                              Refunds
+dbo                                                                                                                              CK_Refund_Date                                                                                                                   dbo                                                                                                                              Refunds
+dbo                                                                                                                              Refunds                                                                                                                          dbo                                                                                                                              Refunds
+dbo                                                                                                                              CK__OrderStat__Order__467D75B8                                                                                                   dbo                                                                                                                              OrderStatusHistory
+dbo                                                                                                                              CK_Category_Name                                                                                                                 dbo                                                                                                                              Categories
+dbo                                                                                                                              CK_Product_SKU                                                                                                                   dbo                                                                                                                              Products
+dbo                                                                                                                              CK__Products__Price__7EF6D905                                                                                                    dbo                                                                                                                              Products
+dbo                                                                                                                              CK__Products__Stock__00DF2177                                                                                                    dbo                                                                                                                              Products
+
+LIVE_METADATA_COMPLETE
+
+Completion time: 2026-10-12T21:38:00.4682900+07:00

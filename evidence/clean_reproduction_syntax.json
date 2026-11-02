@@ -1,0 +1,15 @@
+{
+  "parser": "TSql160Parser",
+  "scope": "T-SQL after SQLCMD directives removed; syntax only",
+  "results": [
+    {
+      "file": "run_small_clean_setup.sql",
+      "errors": 0
+    },
+    {
+      "file": "run_large_clean_setup.sql",
+      "errors": 0
+    }
+  ],
+  "runtime": "NOT EXECUTED"
+}

@@ -1,0 +1,53 @@
+{
+  "status": "ORIGINAL_TO_RECOVERED_SQL_COMPARISON",
+  "files": [
+    {
+      "file": "OnlineRetail Create tb.sql",
+      "original_sha256": "a632824737f95e783ed9534c69467d19d7ff139f4499ca23085419cc2b35bb32",
+      "delivered_sha256": "46c5ab58a0cb7dd4f4a7286de9df59effa14de80ce714ecd130f7525d57efc2b",
+      "changed": true
+    },
+    {
+      "file": "OnlineRetailDB - clone data.sql",
+      "original_sha256": "403bb1307daf03efac096227a9dd42db104d0530f0a47fe9561ff67bcecca763",
+      "delivered_sha256": "a122ed4438dba255a8310978e778c121f8ae08656f42bee87866c918ba401e72",
+      "changed": true
+    },
+    {
+      "file": "OnlineRetail Insert Data.sql",
+      "original_sha256": "b416e3cac974a6d19aa7cbf7ba193fdb59a737187fc88e689d671629e32efd56",
+      "delivered_sha256": "376c23d078527cc5b38f7a0ab9901bf4f5468248e279149bb61661b6df55ea4f",
+      "changed": true
+    },
+    {
+      "file": "OnlineRetailDB Querry.sql",
+      "original_sha256": "d863c335ca7c57a405932f9b87da6fd328eec1ea6e8395f34c2e0e4a22e9999e",
+      "delivered_sha256": "16b136433a47474ebe143d5b3669c15fa2dfa2c2923b37cb58710af3ed5692d1",
+      "changed": true
+    },
+    {
+      "file": "O.R.DB customer analysist.sql",
+      "original_sha256": "9a732b76746ed1cbd74c2542654ac5e06a97b50f633279fb6ea8dd94f56ba37f",
+      "delivered_sha256": "e5c145e09c9ab914bc79f5aa98342e6eb570dd553185abec84e91bffc6ebeeda",
+      "changed": true
+    },
+    {
+      "file": "O.R.DB return_refund analysist.sql",
+      "original_sha256": "e0809fd0dd0d696aba7b118970c35d0aabafba5b797a6b9c57e45989489662d0",
+      "delivered_sha256": "8601303b34104629a822d89aebf8802121b0deb7dd176b5031a4cb43cb0650b1",
+      "changed": true
+    },
+    {
+      "file": "O.R.DB fulfillment_delivery analysist.sql",
+      "original_sha256": "5fea7e7b6e20bceb8e14796bd951fb8cc303eb11f45b565915399398a1d942ae",
+      "delivered_sha256": "5f6315b66e0e2c289e1c9d9b7a28d6f0c987264ea8ef70136a4df90d38c0ee74",
+      "changed": true
+    },
+    {
+      "file": "O.R.DB cohort retention analysist.sql",
+      "original_sha256": "8c6935599300e56df15e9fbf9432e227e342ebf1aaccaa618e87f541592a81c3",
+      "delivered_sha256": "64dca77df81fd4b0cb66a8efbe92e4329aa88d161000dd390c9592f61d01150f",
+      "changed": true
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "parser": "TSql160Parser / ScriptDom",
+  "scope": "regression and integration syntax only",
+  "results": [
+    {
+      "file": "regression_checks.sql",
+      "errors": 0,
+      "sha256": "35e02666d65e30fe16c596b2d38319857bf25456a6ebeb7069e9a3663aec6d25"
+    },
+    {
+      "file": "integration_checks.sql",
+      "errors": 0,
+      "sha256": "232a38c4842aef0347c204bdf56a488d9fb7406130ae15f34e3e8b44a0890c10"
+    }
+  ],
+  "runtime": "NOT EXECUTED"
+}

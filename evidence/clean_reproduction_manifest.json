@@ -1,0 +1,20 @@
+[
+  {
+    "profile": "small",
+    "database": "OnlineRetailDB_Audit_small_Clean_20261012_03",
+    "file": "run_small_clean_setup.sql",
+    "sha256": "bd8ad5644c37c9791aedc595c190bd20690f1a0563370ea20a9640de2077272d",
+    "body_sha256_before_hash_banner": "2eff82effe7f9105d78240138883f6113463581fc210eb8d91b909acf80e3ada",
+    "status": "NOT EXECUTED",
+    "changes": "Only disposable database name and hash banner changed from prior driver."
+  },
+  {
+    "profile": "large",
+    "database": "OnlineRetailDB_Audit_large_Clean_20261012_03",
+    "file": "run_large_clean_setup.sql",
+    "sha256": "b5a3869652187e4cd179366602402af5af47e644d6789593438928233a63273b",
+    "body_sha256_before_hash_banner": "6c1420b9d11950a9695b47a5b7cacc05da6611cad00ffbd22b0b57be35d86ff0",
+    "status": "NOT EXECUTED",
+    "changes": "Only disposable database name and hash banner changed from prior driver."
+  }
+]

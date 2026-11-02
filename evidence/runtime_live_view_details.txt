@@ -1,0 +1,58 @@
+DatabaseName                                                                                                                     ServerName
+-------------------------------------------------------------------------------------------------------------------------------- --------------------------------------------------------------------------------------------------------------------------------
+OnlineRetailDB                                                                                                                   Phuccomputer
+
+TableName                                                                                                                        column_id   ColumnName                                                                                                                       DataType
+-------------------------------------------------------------------------------------------------------------------------------- ----------- -------------------------------------------------------------------------------------------------------------------------------- --------------------------------------------------------------------------------------------------------------------------------
+OrderItems                                                                                                                       1           OrderItemID                                                                                                                      int
+OrderItems                                                                                                                       2           OrderID                                                                                                                          int
+OrderItems                                                                                                                       3           LineNumber                                                                                                                       smallint
+OrderItems                                                                                                                       4           ProductID                                                                                                                        int
+OrderItems                                                                                                                       5           Quantity                                                                                                                         int
+OrderItems                                                                                                                       6           UnitPrice                                                                                                                        decimal
+OrderItems                                                                                                                       7           UnitCostAtOrder                                                                                                                  decimal
+OrderItems                                                                                                                       8           LineDiscount                                                                                                                     decimal
+OrderItems                                                                                                                       9           AllocatedOrderDiscount                                                                                                           decimal
+OrderItems                                                                                                                       10          TaxAmount                                                                                                                        decimal
+OrderItems                                                                                                                       11          NetMerchandiseAmount                                                                                                             decimal
+OrderItems                                                                                                                       12          LinePayableAmount                                                                                                                decimal
+Products                                                                                                                         1           ProductID                                                                                                                        int
+Products                                                                                                                         2           SKU                                                                                                                              varchar
+Products                                                                                                                         3           ProductName                                                                                                                      nvarchar
+Products                                                                                                                         4           CategoryID                                                                                                                       int
+Products                                                                                                                         5           Price                                                                                                                            decimal
+Products                                                                                                                         6           Stock                                                                                                                            int
+Products                                                                                                                         7           IsActive                                                                                                                         bit
+
+ViewName                                                                                                                         ChunkNumber DefinitionChunk                                                                                                                                                                                          DefinitionCharacters
+-------------------------------------------------------------------------------------------------------------------------------- ----------- -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- --------------------
+vw_CustomerOrders                                                                                                                1           CREATE VIEW vw_CustomerOrders 
+AS
+SELECT c.CustomerID, c.FirstName, c.LastName, COUNT(o.OrderID) AS TotalOrders,
+SUM(oi.Quantity * p.Price) as TotalAmount
+FROM Customers c 
+INNER JOIN Orders o ON 384
+vw_CustomerOrders                                                                                                                2            c.CustomerID = o.CustomerID
+INNER JOIN OrderItems oi ON o.OrderID = oi.OrderID
+INNER JOIN Products p ON oi.ProductID = p.ProductID
+GROUP BY c.CustomerID, c.FirstName, c.LastName;
+                 384
+vw_ProductDeails                                                                                                                 1           CREATE VIEW vw_ProductDeails AS
+SELECT p.ProductID, p.ProductName, p.Price, p.Stock, c.CategoryName
+FROM Products p INNER JOIN Categories c
+ON p.CategoryID = c.CategoryID;
+                         176
+vw_RecentOrders                                                                                                                  1           CREATE VIEW vw_RecentOrders 
+AS
+SELECT o.OrderID, o.OrderDate, c.CustomerID, c.FirstName, c.LastName,
+SUM(oi.Quantity * oi.Price) as OrderAmount
+FROM Customers c 
+INNER JOIN Orders o ON c.Custome 345
+vw_RecentOrders                                                                                                                  2           rID = o.CustomerID
+INNER JOIN OrderItems oi ON o.OrderID = oi.OrderID
+GROUP BY o.OrderID, o.OrderDate, c.CustomerID, c.FirstName, c.LastName;
+                                                        345
+
+LIVE_VIEW_DETAILS_COMPLETE
+
+Completion time: 2026-10-12T21:44:04.6425645+07:00
