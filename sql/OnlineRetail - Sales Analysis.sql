@@ -1,22 +1,4 @@
-﻿/*=============================================================================
-  PORTFOLIO PROJECT: ONLINE RETAIL ANALYTICS
-  STEP 4.1 - MONTHLY REVENUE AND PROFIT BY SALES CHANNEL
-
-  SQL dialect : Microsoft SQL Server
-  Database    : OnlineRetailDB
-
-  BUSINESS QUESTION
-  How do revenue and estimated profit change by month and sales channel?
-
-  KPI RULES
-  1. Only Delivered orders are recognized as sales.
-  2. Gross merchandise sales exclude tax and shipping.
-  3. Only Completed refunds reduce revenue.
-  4. Refunds are attributed to the original order month (order-cohort view).
-  5. Shipping is not refundable under the current business rules.
-  6. Estimated profit is conservative because the schema does not record
-     whether returned inventory was restocked, repaired, or written off.
-=============================================================================*/
+﻿/* Analyze monthly Delivered revenue and estimated profit by sales channel. */
 
 USE OnlineRetailDB;
 GO
@@ -43,8 +25,7 @@ FROM dbo.Orders
 WHERE OrderStatus = 'Delivered';
 
 ;WITH
-/* Aggregate order-item data first so every order has exactly one row.
-   This prevents revenue from being multiplied when later joins are added. */
+/* Aggregate items per order to prevent duplicated revenue after joins. */
 OrderItemSummary AS
 (
     SELECT
@@ -56,9 +37,8 @@ OrderItemSummary AS
     GROUP BY oi.OrderID
 ),
 
-/* A refund includes merchandise and tax. Allocate it proportionally using
-   the original order item's merchandise-to-payable ratio. */
-   --ty le hoan tien hang va hoan thue
+/* Aggregate completed refund cash per original order item. */
+
 RefundCashByItem AS
 (
     SELECT ri.OrderItemID,CAST(SUM(r.Amount) AS decimal(18,2)) AS CompletedRefundAmount
@@ -68,9 +48,7 @@ RefundCashByItem AS
     GROUP BY ri.OrderItemID
 ), CompletedRefundByItem AS
 (
-    -- Approved 2026-10-11: aggregate cash per original item, round once to cents.
-    -- Exact quotient/remainder implements ROUND(...,2) for nonnegative amounts.
-    -- Tax refund = completed cash minus this rounded merchandise component.
+    /* Allocate merchandise refunds proportionally and round once per item using exact integer-cent arithmetic. */
     SELECT oi.OrderItemID,oi.OrderID,rc.CompletedRefundAmount,
         CAST(ROUND(
             ((a.Numerator-(a.Numerator % NULLIF(a.Denominator,0)))
@@ -92,9 +70,8 @@ RefundCashByItem AS
     FROM CompletedRefundByItem GROUP BY OrderID
 ),
 
-/* One row per delivered order: this is the safe analytical grain before
-   grouping by month and channel. */
-   --mot dong cho moi don da giao
+/* Keep one row per Delivered order before monthly aggregation. */
+
 DeliveredOrderFacts AS
 (
     SELECT
@@ -117,8 +94,7 @@ DeliveredOrderFacts AS
     WHERE o.OrderStatus = 'Delivered'
 ),
 
-/* Aggregate the order-level facts into the reporting grain:
-   one row per month per sales channel. */
+/* Aggregate Delivered order facts by month and sales channel. */
 
 MonthlyChannelMetrics AS
 (
@@ -154,8 +130,7 @@ MonthlyChannelMetrics AS
         dof.SalesChannel
 ),
 
-/* Generate every calendar month in the reporting period. This ensures LAG
-   compares adjacent calendar months instead of skipping months with no sales. */
+/* Include every calendar month so LAG compares consecutive months. */
 MonthSpine AS
 (
     SELECT @StartMonth AS OrderMonth
@@ -194,8 +169,7 @@ CompleteMonthlySeries AS
         AND mcm.SalesChannel = ch.SalesChannel
 ),
 
-/* Window functions calculate the previous month's result and cumulative
-   year-to-date revenue without collapsing the monthly rows. */
+/* Calculate previous-month revenue and reset cumulative revenue each year. */
 MetricsWithWindows AS
 (
     SELECT
@@ -228,7 +202,7 @@ SELECT
     CAST(OriginalCOGS AS decimal(18,2))               AS OriginalCOGS,
     CAST(EstimatedGrossProfit AS decimal(18,2))       AS EstimatedGrossProfit,
 
-    /* NULLIF prevents division-by-zero errors in empty months. */
+    /* Return NULL when a ratio has a zero denominator. */
     CAST
     (
         NetRevenue / NULLIF(CAST(DeliveredOrderCount AS decimal(18,2)), 0)
@@ -254,37 +228,7 @@ ORDER BY
 OPTION (MAXRECURSION 0);
 GO
 
-/*=============================================================================
-  INTERPRETATION NOTES
-
-  - A month/channel combination with no delivered orders remains visible as 0.
-  - MonthOverMonthGrowthPct is NULL for the first month and whenever the prior
-    calendar month's net revenue is 0; a percentage change from zero is not
-    mathematically meaningful.
-  - CompletedRefundAmount is the customer cash refund including refunded tax.
-  - NetRevenue excludes tax and includes shipping revenue.
-  - EstimatedGrossProfit does not reverse COGS for returned inventory because
-    the current schema has no restock/write-off disposition field.
-=============================================================================*/
-/*=============================================================================
-  PORTFOLIO PROJECT: ONLINE RETAIL ANALYTICS
-  STEP 4.2 - ORDER STATUS, CANCELLATION AND PAYMENT PERFORMANCE
-
-  SQL dialect : Microsoft SQL Server
-  Database    : OnlineRetailDB
-
-  BUSINESS QUESTIONS
-  1. How many orders currently sit in each status?
-  2. What percentage of orders are cancelled?
-  3. How frequently do payment attempts fail?
-  4. How many failed-payment orders are later recovered?
-  5. How many orders progress through each fulfillment stage?
-
-  OUTPUTS
-  Result set 1: Monthly operational KPIs by sales channel.
-  Result set 2: Overall order-status funnel by sales channel.
-  Result set 3: Payment-method performance and failure ranking.
-=============================================================================*/
+/* Analyze order status, payment failures and retry recovery. */
 
 USE OnlineRetailDB;
 GO
@@ -304,13 +248,10 @@ SELECT
     @EndMonth   = DATEFROMPARTS(YEAR(MAX(OrderDate)), MONTH(MAX(OrderDate)), 1)
 FROM dbo.Orders;
 
-/*=============================================================================
-  RESULT SET 1 - MONTHLY ORDER AND PAYMENT KPIs
-=============================================================================*/
+/* Report monthly order and payment metrics by sales channel. */
 
 ;WITH
-/* Payments use an attempt-level grain: an order can fail once and then succeed.
-   Aggregate attempts before joining Orders to prevent duplicated order counts. */
+/* Aggregate payment attempts per order before joining order-level metrics. */
 PaymentAttemptSummary AS
 (
     SELECT
@@ -388,8 +329,7 @@ MonthlyMetrics AS
         ofa.OrderMonth,
         ofa.SalesChannel
 ),
-/* A calendar spine preserves zero-activity months, so trend comparisons use
-   adjacent calendar months rather than adjacent rows with data. */
+/* Preserve zero-activity months for consecutive monthly comparisons. */
 MonthSpine AS
 (
     SELECT @StartMonth AS OrderMonth
@@ -508,13 +448,7 @@ ORDER BY
     SalesChannel
 OPTION (MAXRECURSION 0);
 
-
-/*=============================================================================
-  RESULT SET 2 - ORDER-STATUS FUNNEL
-
-  The current Orders.OrderStatus is a snapshot. A funnel requires historical
-  progression, so OrderStatusHistory is used together with order timestamps.
-=============================================================================*/
+/* Measure stage reach using status history and timestamp-based inference. */
 
 ;WITH
 HistoricalStatusFlags AS
@@ -640,13 +574,7 @@ ORDER BY
     SalesChannel,
     StageNumber;
 
-
-/*=============================================================================
-  RESULT SET 3 - PAYMENT METHOD PERFORMANCE
-
-  DENSE_RANK gives methods with the same failure rate the same rank and does
-  not arbitrarily separate tied business performance.
-=============================================================================*/
+/* Rank payment methods by failure rate, preserving ties. */
 
 ;WITH
 PaymentMethodMetrics AS
@@ -708,48 +636,7 @@ ORDER BY
     PaymentMethod;
 GO
 
-/*=============================================================================
-  INTERPRETATION NOTES
-
-  - CancellationRatePct uses current final order status in each order cohort.
-  - PaymentAttemptFailureRatePct uses all attempts, including Pending.
-  - Retry uses Failed.CreatedAt as proxy: no failure-event timestamp exists.
-    A later-created Completed attempt counts even if another success preceded it.
-  - Funnel infers Pending for all orders and Processing for later active states;
-    this is inferred reach plus history, not history-only event measurement.
-  - OrdersAffectedByFailurePct uses all orders as the denominator.
-  - RetryRecoveryRatePct measures failed-payment orders that later completed.
-  - The funnel measures whether an order ever reached a stage, not merely its
-    current status. Cancelled is a branch outcome rather than a linear stage.
-  - FailureRateRank = 1 identifies the payment method with the highest failed
-    attempt rate; small attempt volumes should be interpreted cautiously.
-  - A NULL percentage means there is no valid denominator; it is not zero.
-=============================================================================*/
-/*=============================================================================
-  PORTFOLIO PROJECT: ONLINE RETAIL ANALYTICS
-  STEP 4.3 - PRODUCT AND CATEGORY PERFORMANCE
-
-  SQL dialect : Microsoft SQL Server
-  Database    : OnlineRetailDB
-
-  BUSINESS QUESTIONS
-  1. Which products and categories generate the most sales and profit?
-  2. What percentage of revenue does each product/category contribute?
-  3. Which products have high physical-return rates?
-  4. Which products lead sales within each month?
-
-  OUTPUTS
-  Result set 1: Product performance and rankings.
-  Result set 2: Category performance and rankings.
-  Result set 3: Monthly product rankings and revenue concentration.
-
-  KPI RULES
-  - Only Delivered orders are recognized as sales.
-  - Revenue uses historical OrderItems values, not current Products.Price.
-  - Only Completed refunds reduce revenue.
-  - Physical returned quantity requires Returns.ReceivedAt to be populated.
-  - Shipping and tax are excluded from merchandise revenue and profit.
-=============================================================================*/
+/* Analyze product and category merchandise sales, profit and returns. */
 
 USE OnlineRetailDB;
 GO
@@ -766,13 +653,7 @@ BEGIN
     THROW 50003, 'No delivered orders are available for product analysis.', 1;
 END;
 
-/*=============================================================================
-  Build one reusable item-level fact table.
-
-  Grain: one row per OrderItem belonging to a Delivered order.
-  Refunds and returns are aggregated separately before they are joined. This
-  prevents many-to-many joins from multiplying revenue, quantities or refunds.
-=============================================================================*/
+/* Aggregate refunds and received returns separately before building Delivered item facts. */
 
 DROP TABLE IF EXISTS #DeliveredItemFacts;
 
@@ -786,9 +667,7 @@ RefundCashByItem AS
     GROUP BY ri.OrderItemID
 ), CompletedRefundByItem AS
 (
-    -- Approved 2026-10-11: aggregate cash per original item, round once to cents.
-    -- Exact quotient/remainder implements ROUND(...,2) for nonnegative amounts.
-    -- Tax refund = completed cash minus this rounded merchandise component.
+    /* Allocate merchandise refunds proportionally and round once per item using exact integer-cent arithmetic. */
     SELECT oi.OrderItemID,oi.OrderID,rc.CompletedRefundAmount,
         CAST(ROUND(
             ((a.Numerator-(a.Numerator % NULLIF(a.Denominator,0)))
@@ -858,13 +737,7 @@ LEFT JOIN ReceivedReturnByItem AS rri
     ON rri.OrderItemID = oi.OrderItemID
 WHERE o.OrderStatus = 'Delivered';
 
-
-/*=============================================================================
-  RESULT SET 1 - PRODUCT PERFORMANCE
-
-  Products with no Delivered sales remain visible with zero metrics. This is
-  useful for identifying inactive, cancelled-only or unsold inventory.
-=============================================================================*/
+/* Retain all products, including those with no Delivered sales. */
 
 ;WITH
 ProductMetrics AS
@@ -969,10 +842,7 @@ ORDER BY
     OverallRevenueRank,
     ProductID;
 
-
-/*=============================================================================
-  RESULT SET 2 - CATEGORY PERFORMANCE
-=============================================================================*/
+/* Report category metrics; order counts can overlap across categories. */
 
 ;WITH
 CategoryMetrics AS
@@ -1047,13 +917,7 @@ ORDER BY
     CategoryRevenueRank,
     CategoryID;
 
-
-/*=============================================================================
-  RESULT SET 3 - MONTHLY PRODUCT RANKING
-
-  The cumulative percentage supports Pareto analysis: it shows how quickly a
-  small number of products account for most monthly sales.
-=============================================================================*/
+/* Rank monthly products and calculate cumulative sales shares before filtering top ranks. */
 
 ;WITH
 MonthlyProductMetrics AS
@@ -1134,20 +998,3 @@ ORDER BY
 
 DROP TABLE IF EXISTS #DeliveredItemFacts;
 GO
-
-/*=============================================================================
-  INTERPRETATION NOTES
-
-  - Products and categories with zero Delivered sales are intentionally shown.
-  - UnitReturnRatePct counts physically received returned units, including
-    approved, partially approved and rejected return decisions.
-  - RefundedMerchandiseAmount counts only Completed refunds and excludes the
-    refunded tax component through proportional allocation.
-  - EstimatedGrossProfit is conservative: the current schema cannot determine
-    whether returned inventory was restocked or written off, so COGS is not
-    reversed after a return.
-  - Revenue ranks use NetMerchandiseSales after completed refunds.
-  - Category/product order counts overlap: never sum them for portfolio orders.
-  - Monthly top-five uses dense ranks, so ties may produce more than five rows.
-  - Pareto is NULL for nonpositive totals or any negative product contribution.
-=============================================================================*/

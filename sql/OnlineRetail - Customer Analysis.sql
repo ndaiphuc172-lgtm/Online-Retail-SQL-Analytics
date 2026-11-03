@@ -1,14 +1,4 @@
-﻿/* STEP 4.4: CUSTOMER ANALYSIS - SQL SERVER
-   Database: OnlineRetailDB
-   Read-only against permanent tables; temporary tables are session-local.
-   Purchase = Delivered order, ordered by OrderDate then OrderID.
-   New order = first Delivered order; subsequent purchases = Repeat.
-   Fully refunded Delivered orders still count as purchases.
-   Observed lifetime revenue is NOT predicted Customer Lifetime Value.
-   Revenue excludes tax, includes shipping, and attributes completed refunds
-   to the original order. All results describe the available dataset only.
-*/
-USE [OnlineRetailDB];
+﻿USE [OnlineRetailDB];
 GO
 SET NOCOUNT ON;
 
@@ -16,7 +6,7 @@ DROP TABLE IF EXISTS #CustomerPurchases;
 
 ;WITH ItemTotals AS
 (
-    -- One row per order prevents item/payment join duplication.
+    /* Aggregate merchandise amounts to one row per order. */
     SELECT OrderID, CAST(SUM(NetMerchandiseAmount) AS decimal(28,2)) AS MerchandiseSales
     FROM dbo.OrderItems
     GROUP BY OrderID
@@ -29,9 +19,7 @@ DROP TABLE IF EXISTS #CustomerPurchases;
     GROUP BY ri.OrderItemID
 ), CompletedRefundByItem AS
 (
-    -- Approved 2026-10-11: aggregate cash per original item, round once to cents.
-    -- Exact quotient/remainder implements ROUND(...,2) for nonnegative amounts.
-    -- Tax refund = completed cash minus this rounded merchandise component.
+    /* Allocate merchandise refunds using exact integer-cent rounding per item. */
     SELECT oi.OrderItemID,oi.OrderID,rc.CompletedRefundAmount,
         CAST(ROUND(
             ((a.Numerator-(a.Numerator % NULLIF(a.Denominator,0)))
@@ -74,7 +62,7 @@ SELECT pf.*,
 INTO #CustomerPurchases
 FROM PurchaseFacts AS pf;
 
--- RESULT 1: Every customer, including customers without Delivered purchases.
+/* Keep customers without Delivered purchases and return NULL for their revenue rank. */
 ;WITH CustomerMetrics AS
 (
     SELECT c.CustomerID, c.FirstName, c.LastName, c.IsActive,
@@ -95,7 +83,6 @@ SELECT *,
          ELSE 'Repeat buyer' END AS CustomerSegment,
     CAST(ObservedLifetimeNetRevenue/NULLIF(DeliveredOrderCount,0)
         AS decimal(18,2)) AS CustomerAOV,
-    -- Non-buyers receive NULL rank instead of appearing as paying customers.
     CASE WHEN DeliveredOrderCount>0 THEN
         DENSE_RANK() OVER(ORDER BY
             CASE WHEN DeliveredOrderCount>0 THEN 1 ELSE 0 END DESC,
@@ -104,8 +91,7 @@ SELECT *,
 FROM CustomerMetrics
 ORDER BY ObservedLifetimeNetRevenue DESC,CustomerID;
 
--- RESULT 2: Monthly order mix. Missing months are omitted, NOT zero-filled.
--- Customers can place both a New and a Repeat order in the same month.
+/* Report monthly purchase mix; months without purchases are omitted. */
 ;WITH MonthlyMix AS
 (
     SELECT OrderMonth,SalesChannel,
@@ -145,13 +131,3 @@ ORDER BY CustomerID,OrderDate,OrderID;
 
 DROP TABLE IF EXISTS #CustomerPurchases;
 GO
-
-/* DEMO EXPECTATIONS:
-   6 customers; 4 Delivered orders belonging to 4 customers.
-   2 customers have no Delivered purchase; no customer has a Repeat purchase.
-   Revenue: An=899.00, Binh=0.00, Chi=29.99, Dung=160.00.
-   Total observed net revenue=1088.99 (shipping included, tax excluded).
-   Empty repeat results reflect the small seed, not a SQL error.
-   Limitations: no historical cutoff, acquisition costs, forecast, or complete
-   lifetime history. This is retrospective revenue, not predictive CLV.
-*/

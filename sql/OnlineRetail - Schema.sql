@@ -263,9 +263,8 @@ CREATE TABLE dbo.ReturnItems (
     )
 );
 
--- One row per refund attempt against a payment and an approved return item.
--- Split a refund across payments using multiple rows. Failed attempts do not
--- consume approval; Pending and Completed attempts reserve approved amount.
+/* Record refund attempts; split refunds across payments using multiple rows. */
+/* Validate Pending/Completed reservation caps across tables in DQ checks; Failed attempts do not reserve approval. */
 
 CREATE TABLE dbo.Refunds (
     RefundID int IDENTITY PRIMARY KEY,

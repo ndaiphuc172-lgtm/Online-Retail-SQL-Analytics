@@ -1,10 +1,4 @@
 ﻿/*=============================================================================
-  PORTFOLIO PROJECT: ONLINE RETAIL ANALYTICS
-  STEP 4.6 - FULFILLMENT AND DELIVERY PERFORMANCE
-
-  SQL dialect : Microsoft SQL Server
-  Database    : OnlineRetailDB
-
   DEMO SLA ASSUMPTIONS
   - Order to shipment : <= 48 hours
   - Shipment to delivery: <= 72 hours
@@ -26,8 +20,7 @@ DECLARE @TransitSLAHours decimal(10,2)=72.00;
 DECLARE @EndToEndSLAHours decimal(10,2)=120.00;
 DECLARE @AnalysisAsOf datetime2(0);
 
-/* A data-driven as-of timestamp keeps the demo reproducible after cloning.
-   In a live dashboard, replace this value with SYSUTCDATETIME(). */
+/* Use the latest recorded order event as the reproducible analysis timestamp. */
 SELECT @AnalysisAsOf=MAX(EventAt)
 FROM
 (
@@ -45,8 +38,7 @@ END;
 
 DROP TABLE IF EXISTS #FulfillmentFacts;
 
-/* Grain: one row per order. Durations use seconds/3600 so partial hours are
-   retained; DATEDIFF(HOUR) alone would count crossed hour boundaries. */
+/* Calculate elapsed hours from seconds to retain fractional durations. */
 SELECT o.OrderID,o.CustomerID,o.OrderDate,o.SalesChannel,o.OrderStatus,
     o.ShippedAt,o.DeliveredAt,o.CancelledAt,
     DATEFROMPARTS(YEAR(o.OrderDate),MONTH(o.OrderDate),1) AS OrderMonth,
@@ -214,9 +206,7 @@ SELECT ROW_NUMBER() OVER
 FROM Risk
 ORDER BY BacklogPriority;
 
-/* RESULT 4: Time spent in workflow statuses. LEAD locates the next event.
-   Current Pending/Processing/Shipped stages end at @AnalysisAsOf; terminal
-   Delivered/Cancelled stages are excluded from duration averages. */
+/* Use LEAD to measure nonterminal stages through the next event or analysis timestamp. */
 ;WITH StatusEvents AS
 (
     SELECT osh.OrderStatusHistoryID,osh.OrderID,o.SalesChannel,
@@ -255,11 +245,3 @@ ORDER BY SalesChannel,
 
 DROP TABLE IF EXISTS #FulfillmentFacts;
 GO
-
-/* DEMO INTERPRETATION
-   - Delivered demo orders satisfy the 48/72/120-hour SLA assumptions.
-   - The May Shipped order appears as delivery overdue.
-   - The June Processing and July Pending orders appear as shipment overdue.
-   - @AnalysisAsOf is the latest order/status event in the demo, so results are
-     reproducible. Replace it with SYSUTCDATETIME() for a live operation view.
-*/

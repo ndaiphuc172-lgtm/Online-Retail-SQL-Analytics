@@ -1,33 +1,8 @@
-﻿/*=============================================================================
-  PORTFOLIO PROJECT: ONLINE RETAIL ANALYTICS
-  STEP 4.7 - CUSTOMER COHORT AND RETENTION ANALYSIS
-
-  SQL dialect : Microsoft SQL Server
-  Database    : OnlineRetailDB
-
-  DEFINITIONS
-  - Valid purchase: OrderStatus='Delivered'.
-  - Cohort month: month of a customer's first Delivered order.
-  - Month 0: acquisition month; Month 1, 2... are calendar-month offsets.
-  - Retained customer: cohort customer with >=1 Delivered order in that month.
-  - Fully refunded Delivered orders still count as purchase activity.
-  - Revenue excludes tax, includes shipping, and subtracts completed refunds.
-
-  OUTPUTS
-  1. Long-form cohort retention and cumulative revenue.
-  2. M0-M12 retention matrix for reporting/heatmaps.
-  3. Repeat-purchase KPIs by cohort and acquisition channel.
-=============================================================================*/
-
-USE [OnlineRetailDB];
+﻿USE [OnlineRetailDB];
 GO
 SET NOCOUNT ON;
 
--- REQUIRED coverage assertion: do not infer extraction coverage from purchases.
--- Large seed: 2026-10-01T00:00:00 (documented exclusive UTC cutoff).
--- Small demo policy selected with user authorization: observe through August 2026.
--- For the large seed set the declaration below to 2026-10-01T00:00:00.
--- This is a retrospective snapshot report, not historical status reconstruction.
+/* Set the exclusive UTC cutoff: small seed 2026-09-01; large seed 2026-10-01. */
 DECLARE @ObservationCutoffExclusive datetime2(0)='2026-09-01T00:00:00';
 IF @ObservationCutoffExclusive IS NULL
     THROW 50008, 'Set the verified exclusive UTC dataset coverage cutoff.', 1;
@@ -54,7 +29,6 @@ DECLARE @ObservationEndMonth date=DATEFROMPARTS(
     YEAR(DATEADD(SECOND,-1,@ObservationCutoffExclusive)),
     MONTH(DATEADD(SECOND,-1,@ObservationCutoffExclusive)),1);
 
-
 IF NOT EXISTS(SELECT 1 FROM dbo.Orders WHERE OrderStatus='Delivered')
 BEGIN
     THROW 50007, 'No delivered orders are available for cohort analysis.', 1;
@@ -69,24 +43,27 @@ DROP TABLE IF EXISTS #CohortRetention;
     SELECT OrderID,CAST(SUM(NetMerchandiseAmount) AS decimal(28,2)) AS MerchandiseSales
     FROM dbo.OrderItems
     GROUP BY OrderID
-), RefundCashByItem AS
+),
+RefundCashByItem AS
 (
     SELECT ri.OrderItemID,CAST(SUM(r.Amount) AS decimal(18,2)) AS CompletedRefundAmount
     FROM dbo.Refunds r
     JOIN dbo.ReturnItems ri ON ri.ReturnItemID=r.ReturnItemID
     WHERE r.RefundStatus='Completed'
     GROUP BY ri.OrderItemID
-), CompletedRefundByItem AS
+),
+CompletedRefundByItem AS
 (
-    -- Approved 2026-10-11: aggregate cash per original item, round once to cents.
-    -- Exact quotient/remainder implements ROUND(...,2) for nonnegative amounts.
-    -- Tax refund = completed cash minus this rounded merchandise component.
-    SELECT oi.OrderItemID,oi.OrderID,rc.CompletedRefundAmount,
+    /* Allocate merchandise refunds proportionally and round once per item using exact integer-cent arithmetic. */
+    SELECT
+        oi.OrderItemID,oi.OrderID,rc.CompletedRefundAmount,
         CAST(ROUND(
-            ((a.Numerator-(a.Numerator % NULLIF(a.Denominator,0)))
+                    ((a.Numerator-(a.Numerator % NULLIF(a.Denominator,0)))
                 /NULLIF(a.Denominator,0)
-             +CASE WHEN (a.Numerator % NULLIF(a.Denominator,0))*2>=a.Denominator
-                   THEN 1 ELSE 0 END)/100.0,2) AS decimal(18,2))
+             +CASE WHEN (a.Numerator % NULLIF(a.Denominator,0))*2 >= a.Denominator
+                   THEN 1
+                   ELSE 0
+              END)/100.0,2) AS decimal(18,2))
             AS RefundedMerchandiseAmount
     FROM RefundCashByItem rc
     JOIN dbo.OrderItems oi ON oi.OrderItemID=rc.OrderItemID
@@ -130,9 +107,7 @@ DECLARE @MaxMonthIndex int=(SELECT MAX(DATEDIFF(MONTH,CohortMonth,
                                                @ObservationEndMonth))
                             FROM #CohortPurchases);
 
-/* Create an observed cohort-month grid. This distinguishes:
-   0    = period was observable but nobody returned;
-   NULL = period has not elapsed yet and is excluded from the grid. */
+/* Build observed cohort-month rows and fill missing purchase activity with zero. */
 ;WITH CohortSizes AS
 (
     SELECT CohortMonth,COUNT(DISTINCT CustomerID) AS CohortSize
@@ -178,7 +153,7 @@ INTO #CohortRetention
 FROM RetentionBase
 OPTION(MAXRECURSION 0);
 
-/* RESULT 1: Long format is the preferred source for Power BI/Tableau. */
+/* Report monthly cohort activity, retention and cumulative revenue. */
 SELECT @ObservationCutoffExclusive AS ObservationCutoffExclusiveUTC,
     CAST(CASE WHEN DATEADD(MONTH,1,ActivityMonth)>@ObservationCutoffExclusive
               THEN 1 ELSE 0 END AS bit) AS IsPartialActivityMonth,
@@ -192,8 +167,7 @@ SELECT @ObservationCutoffExclusive AS ObservationCutoffExclusiveUTC,
 FROM #CohortRetention
 ORDER BY CohortMonth,MonthIndex;
 
-/* RESULT 2: A fixed 13-month matrix is convenient for a GitHub portfolio.
-   NULL means the cohort has not yet had time to reach that month. */
+/* Pivot retention into M0-M12; unobserved periods remain NULL. */
 SELECT @ObservationCutoffExclusive AS ObservationCutoffExclusiveUTC,
     @ObservationEndMonth AS LastObservedMonth,
     CAST(CASE WHEN DATEADD(MONTH,1,@ObservationEndMonth)>@ObservationCutoffExclusive
@@ -216,8 +190,7 @@ FROM #CohortRetention
 GROUP BY CohortMonth
 ORDER BY CohortMonth;
 
-/* RESULT 3: Observed-to-cutoff conversion; cohorts have unequal maturity.
-   Compare channels within cohort only. This is not a fixed-horizon retention KPI. */
+/* Compare repeat purchases by acquisition channel within cohorts of the same age. */
 ;WITH CustomerSummary AS
 (
     SELECT CustomerID,CohortMonth,AcquisitionChannel,
@@ -271,11 +244,3 @@ ORDER BY CohortMonth,AcquisitionChannelRankWithinCohort,AcquisitionChannel;
 DROP TABLE IF EXISTS #CohortRetention;
 DROP TABLE IF EXISTS #CohortPurchases;
 GO
-
-/* DEMO INTERPRETATION
-   - The small seed has four purchasing customers and no repeat customer.
-   - Every cohort has M0=100%; observable later months equal 0%.
-   - Future, unobservable months are NULL in the matrix.
-   - Zero repeat retention reflects the compact demo seed, not a query error.
-   Use the larger mock-data script for a meaningful retention heatmap.
-*/

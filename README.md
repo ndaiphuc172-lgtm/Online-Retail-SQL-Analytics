@@ -21,16 +21,16 @@ A reproducible SQL portfolio for revenue, payments, product performance, custome
 | Net revenue, USD | 1,088.99 | 1,847,763.57 |
 | Completed merchandise refund, USD | 186.00 | 71,592.71 |
 
-Recognized purchases use Delivered orders. Revenue includes shipping once and excludes tax; completed merchandise refunds are allocated and rounded per original order item. Read [the KPI contract](docs/kpi_contract.md) before interpreting outputs.
+Recognized purchases use Delivered orders. Revenue includes shipping once and excludes tax; completed merchandise refunds are allocated and rounded per original order item. Read [the KPI contract](docs/kpi_contract.md) before interpreting outputs. [Analysis notes and small-seed expectations](docs/analysis_notes.md) explain cohort, sales and return/refund output interpretation.
 
 ## Run from a new database
 
 Validated on SQL Server 2022 (16.0.1000.6), compatibility 160. Use SSMS.
 
-1. Run `sql/OnlineRetail Create tb.sql` only when `OnlineRetailDB` does not exist. Setup refuses an existing database.
-2. Run exactly one seed: `OnlineRetailDB - clone data.sql` (small) or `OnlineRetail Insert Data.sql` (large). Seeds refuse nonempty tables.
+1. Run `sql/OnlineRetail - Schema.sql` only when `OnlineRetailDB` does not exist. Setup refuses an existing database.
+2. Run exactly one seed: `OnlineRetail - Small Seed.sql` (small) or `OnlineRetail - Large Seed.sql` (large). Seeds refuse nonempty tables.
 3. In `tests/data_quality_checks.sql`, select `@SeedProfile='small'` or `'large'` for that seed, then run the whole file.
-4. Run `OnlineRetailDB Querry.sql` (A/B/C), then customer (D), return_refund (E), fulfillment_delivery (F) and cohort retention (G) SQL files.
+4. Run `OnlineRetail - Sales Analysis.sql` (A/B/C), then customer (D), return_refund (E), fulfillment_delivery (F) and cohort retention (G) SQL files.
 5. G defaults to exclusive UTC cutoff `2026-09-01T00:00:00` for small. For large select `2026-10-01T00:00:00`. Set the same cutoff wherever declared in `tests/kpi_reconciliation.sql`, then execute reconciliation.
 
 Do not run both seeds or remove existing data to rerun setup. Files containing `:ON ERROR EXIT` require **Query > SQLCMD Mode** in that SSMS window. Run entire files, one connection per file.

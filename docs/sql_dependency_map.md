@@ -2,11 +2,11 @@
 
 | Final report file | Direct dbo references |
 |---|---|
-| O.R.DB cohort retention analysist.sql | OrderItems, OrderStatusHistory, Orders, Payments, Refunds, ReturnItems, Returns |
-| O.R.DB customer analysist.sql | Customers, OrderItems, Orders, Refunds, ReturnItems |
-| O.R.DB fulfillment_delivery analysist.sql | OrderStatusHistory, Orders |
-| O.R.DB return_refund analysist.sql | Categories, OrderItems, Orders, Products, Refunds, ReturnItems, Returns |
-| OnlineRetailDB Querry.sql | Categories, OrderItems, OrderStatusHistory, Orders, Payments, Products, Refunds, ReturnItems, Returns |
+| OnlineRetail - Cohort Retention.sql | OrderItems, OrderStatusHistory, Orders, Payments, Refunds, ReturnItems, Returns |
+| OnlineRetail - Customer Analysis.sql | Customers, OrderItems, Orders, Refunds, ReturnItems |
+| OnlineRetail - Delivery Analysis.sql | OrderStatusHistory, Orders |
+| OnlineRetail - Return Refund Analysis.sql | Categories, OrderItems, Orders, Products, Refunds, ReturnItems, Returns |
+| OnlineRetail - Sales Analysis.sql | Categories, OrderItems, OrderStatusHistory, Orders, Payments, Products, Refunds, ReturnItems, Returns |
 
 Schema defines eleven retail tables: Categories, Customers, Products, Orders, OrderAddresses, OrderItems, Payments, OrderStatusHistory, Returns, ReturnItems, Refunds. Reports create session-local analytical facts; fixtures use #Fixture counterparts. G uses #CohortPurchases, D uses #CustomerPurchases.
 

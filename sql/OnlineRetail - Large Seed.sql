@@ -1,9 +1,4 @@
 ﻿/*
-BUOC 2 - MOCK DATA / Online Retail Portfolio / SQL Server
-Run the WHOLE file in SSMS in a fresh query window after Step 1.
-Database: OnlineRetailDB. Requires the exact 11-table Step 1 schema.
-Fixed seed: 20261006. Orders: 2024-10-01 through 2026-09-30 UTC.
-Snapshot cutoff (exclusive): 2026-10-01 00:00:00 UTC. All data is fictional.
 
 HUONG DAN:
 1. Chay ca file (F5), khong chay lai schema va khong chen tung doan rieng le.
@@ -15,25 +10,6 @@ HUONG DAN:
    Neu test bat ngo that bai, du lieu mau da COMMIT van duoc giu lai.
 6. Ket qua mong doi: LOAD PASSED, 7 tests PASS, 3 staging tests PASS.
 
-GIA DINH NGHIEP VU:
-- One seller; US customer locations, USD; Website/App; physical goods.
-- Tax = synthetic flat 8% on discounted merchandise, not a legal tax model.
-- Shipping = 5.99, free at net merchandise >= 100; shipping not refundable.
-- Discount/tax allocated at line grain; coupon rounding residual on final line.
-- Full refund = eligible returned-unit amount after discounts, including tax.
-- Noncompliant goods: approve 60% for this fixture, or reject with reason.
-  60% is a mock-data choice, NOT a fixed business rule in the schema.
-- Failed payments/refunds are separate attempts, excluded from money settled.
-- Cancelled orders have no captured payments in this model.
-- Current Stock is a synthetic closing snapshot, not an inventory ledger.
-- Products.Price is current; OrderItems.UnitPrice is historical.
-- Signup dates precede orders; at least 100 customers and 2 products have no sales.
-- Seasonal volume, repeat buyers, App adoption, Feb-2026 Card decline spike are
-  intentionally simulated patterns; not evidence about a real business.
-
-SCOPE: validations below validate THIS loaded dataset. They do not add permanent
-triggers/stored procedures to enforce cross-table workflow on future writes.
-No KPIs/business-question solutions in this step.
 */
 USE OnlineRetailDB
 GO
@@ -78377,7 +78353,7 @@ UNION ALL SELECT 'Lines returned in multiple requests',COUNT_BIG(*) FROM
 UNION ALL SELECT 'Orders with split successful payments',COUNT_BIG(*) FROM
  (SELECT OrderID FROM dbo.Payments WHERE PaymentStatus='Completed' GROUP BY OrderID HAVING COUNT(*)>1) q;
 
--- Example rows only: inspect full/partial decisions and retry attempts.
+/* Inspect sample return decisions and approved refund amounts. */
 SELECT TOP (12) ri.ReturnItemID,r.OrderID,ri.OrderItemID,ri.Quantity,
     r.ReceivedAt,ri.InspectionResult,ri.DecisionStatus,ri.EligibleRefundAmount,
     ri.ApprovedRefundAmount,ri.DecisionReason

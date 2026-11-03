@@ -303,7 +303,7 @@ GO
         returns, full refund, partial refund, rejection, and pending states.
 
     Recommended order:
-      1. Run OnlineRetail Create tb.sql
+      1. Run OnlineRetail - Schema.sql
       2. Run this file on an empty OnlineRetailDB
 
     Notes:
@@ -846,7 +846,7 @@ SELECT * FROM #AuditResults ORDER BY TestID;
 IF EXISTS(SELECT 1 FROM #AuditResults WHERE Result='FAIL') THROW 53400,'Fixture integrity gate failed.',1;
 GO
 
-/* ACTUAL MODULE FILE: OnlineRetailDB Querry.sql */
+/* ACTUAL MODULE FILE: OnlineRetail - Sales Analysis.sql */
 /*=============================================================================
   PORTFOLIO PROJECT: ONLINE RETAIL ANALYTICS
   STEP 4.1 - MONTHLY REVENUE AND PROFIT BY SALES CHANNEL
@@ -2003,7 +2003,7 @@ GO
 
 GO
 
-/* ACTUAL MODULE FILE: O.R.DB customer analysist.sql */
+/* ACTUAL MODULE FILE: OnlineRetail - Customer Analysis.sql */
 /* STEP 4.4: CUSTOMER ANALYSIS - SQL SERVER
    Database: OnlineRetailDB
    Read-only against permanent tables; temporary tables are session-local.
@@ -2164,7 +2164,7 @@ GO
 
 GO
 
-/* ACTUAL MODULE FILE: O.R.DB return_refund analysist.sql */
+/* ACTUAL MODULE FILE: OnlineRetail - Return Refund Analysis.sql */
 /*=============================================================================
   PORTFOLIO PROJECT: ONLINE RETAIL ANALYTICS
   STEP 4.5 - RETURN AND REFUND PERFORMANCE
@@ -2486,7 +2486,7 @@ GO
 
 GO
 
-/* ACTUAL MODULE FILE: O.R.DB fulfillment_delivery analysist.sql */
+/* ACTUAL MODULE FILE: OnlineRetail - Delivery Analysis.sql */
 /*=============================================================================
   PORTFOLIO PROJECT: ONLINE RETAIL ANALYTICS
   STEP 4.6 - FULFILLMENT AND DELIVERY PERFORMANCE
@@ -2755,7 +2755,7 @@ GO
 
 GO
 
-/* ACTUAL MODULE FILE: O.R.DB cohort retention analysist.sql */
+/* ACTUAL MODULE FILE: OnlineRetail - Cohort Retention.sql */
 /*=============================================================================
   PORTFOLIO PROJECT: ONLINE RETAIL ANALYTICS
   STEP 4.7 - CUSTOMER COHORT AND RETENTION ANALYSIS

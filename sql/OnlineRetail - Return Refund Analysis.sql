@@ -1,24 +1,4 @@
-﻿/*=============================================================================
-  PORTFOLIO PROJECT: ONLINE RETAIL ANALYTICS
-  STEP 4.5 - RETURN AND REFUND PERFORMANCE
-
-  SQL dialect : Microsoft SQL Server
-  Database    : OnlineRetailDB
-
-  OUTPUTS
-  1. Monthly return/refund KPIs by order cohort and sales channel.
-  2. Inspection and refund-decision outcomes.
-  3. Return-reason analysis.
-  4. Product return-risk ranking.
-
-  BUSINESS RULES
-  - Sales denominators include Delivered orders only.
-  - A physical return requires Returns.ReceivedAt IS NOT NULL.
-  - Only RefundStatus='Completed' is treated as money refunded.
-  - Refund rates use tax-inclusive merchandise payable as denominator because
-    Refunds.Amount includes refunded merchandise tax and excludes shipping.
-  - Returns/refunds are attributed to the original order month (cohort view).
-=============================================================================*/
+﻿/* Analyze physical returns, inspection decisions and refund settlement separately. */
 
 USE [OnlineRetailDB];
 GO
@@ -52,8 +32,7 @@ FROM dbo.Orders AS o
 JOIN ItemTotals AS it ON it.OrderID=o.OrderID
 WHERE o.OrderStatus='Delivered';
 
-/* Aggregate refund attempts before joining ReturnItems. This keeps the fact
-   table at one row per ReturnItem even when a refund is split or retried. */
+/* Find the first completed-refund timestamp that reaches the approved amount. */
 ;WITH CompletedSequence AS
 (
     SELECT r.ReturnItemID,r.CompletedAt,r.RefundID,
@@ -70,7 +49,9 @@ WHERE o.OrderStatus='Delivered';
       AND ri.ApprovedRefundAmount>0
       AND cs.RunningCompletedAmount>=ri.ApprovedRefundAmount
     GROUP BY cs.ReturnItemID
-), RefundByReturnItem AS
+),
+/* Aggregate refund statuses per return item before joining return details. */
+RefundByReturnItem AS
 (
     SELECT ReturnItemID,
         SUM(CASE WHEN RefundStatus='Completed' THEN Amount ELSE 0 END)
@@ -111,7 +92,7 @@ JOIN dbo.Categories AS c ON c.CategoryID=p.CategoryID
 LEFT JOIN RefundByReturnItem AS rf ON rf.ReturnItemID=ri.ReturnItemID
 LEFT JOIN Settlement st ON st.ReturnItemID=ri.ReturnItemID;
 
-/* RESULT 1: Monthly cohort KPIs, including zero-activity month/channel rows. */
+/* Report return and refund rates by order month and channel, including empty periods. */
 DECLARE @StartMonth date=(SELECT MIN(OrderMonth) FROM #DeliveredOrderFacts);
 DECLARE @EndMonth date=(SELECT MAX(OrderMonth) FROM #DeliveredOrderFacts);
 
@@ -222,7 +203,7 @@ FROM Trends
 ORDER BY OrderMonth,SalesChannel
 OPTION(MAXRECURSION 0);
 
-/* RESULT 2: Decision, approval and settlement outcomes. */
+/* Compare inspection decisions, approved amounts and refund settlement. */
 SELECT COALESCE(InspectionResult,'Not inspected') AS InspectionResult,
     DecisionStatus,COUNT(*) AS ReturnItemCount,SUM(Quantity) AS ReturnedUnits,
     CAST(SUM(EligibleRefundAmount) AS decimal(18,2))
@@ -244,8 +225,7 @@ FROM #ReturnItemFacts
 GROUP BY COALESCE(InspectionResult,'Not inspected'),DecisionStatus
 ORDER BY DecisionStatus,InspectionResult;
 
-/* RESULT 3: Exact free-text reasons are grouped as entered. In production,
-   add a normalized ReturnReasonCode dimension for stable reporting. */
+/* Group return reasons by their exact recorded text. */
 ;WITH ReasonMetrics AS
 (
     SELECT ReturnReason,COUNT(*) AS ReturnItemCount,SUM(Quantity) AS ReturnedUnits,
@@ -267,8 +247,7 @@ SELECT ReturnReason,ReturnItemCount,ReturnedUnits,
 FROM ReasonAnalytics
 ORDER BY ReasonFrequencyRank,ReturnReason;
 
-/* RESULT 4: Product risk uses physical received units, including rejected
-   returns. Products without Delivered sales have no meaningful return rate. */
+/* Calculate product return risk from received units, including rejected returns. */
 ;WITH ProductSales AS
 (
     SELECT oi.ProductID,SUM(oi.Quantity) AS UnitsSold,
@@ -308,11 +287,3 @@ ORDER BY ProductReturnRiskRank,ProductID;
 DROP TABLE IF EXISTS #ReturnItemFacts;
 DROP TABLE IF EXISTS #DeliveredOrderFacts;
 GO
-
-/* DEMO EXPECTATIONS
-   - February App: full refund, refund-to-payable rate 100%.
-   - March Website: partial refund 38.88 / 64.80 = 60%.
-   - August App: physical return exists but refund is rejected, so refund=0.
-   - Shoes, backpack and earbuds each have a 100% physical unit return rate;
-     the small sample size must be considered before business action.
-*/

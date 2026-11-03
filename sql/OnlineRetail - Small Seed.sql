@@ -13,7 +13,7 @@ GO
         returns, full refund, partial refund, rejection, and pending states.
 
     Recommended order:
-      1. Run OnlineRetail Create tb.sql
+      1. Run OnlineRetail - Schema.sql
       2. Run this file on an empty OnlineRetailDB
 
     Notes:
