@@ -10,4 +10,4 @@
 
 Schema defines eleven retail tables: Categories, Customers, Products, Orders, OrderAddresses, OrderItems, Payments, OrderStatusHistory, Returns, ReturnItems, Refunds. Reports create session-local analytical facts; fixtures use #Fixture counterparts. G uses #CohortPurchases, D uses #CustomerPurchases.
 
-Live metadata: CustomerOrders depends on Customers/Orders/OrderItems/Products; ProductDeails on Products/Categories; RecentOrders on Customers/Orders/OrderItems. Corrected CustomerOrders removes the Products join. Live views are unchanged. sp_*diagram and fn_diagramobjects are SSMS infrastructure. Complete columns/definitions are in evidence/runtime_live_view_details.txt.
+The core A–G workflow does not require the legacy views found in the existing database. Their definitions, remediation and database-diagram infrastructure are excluded from this SQL-focused portfolio.

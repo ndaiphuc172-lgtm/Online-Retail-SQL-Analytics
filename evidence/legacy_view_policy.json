@@ -1,8 +1,0 @@
-{
-  "source": "Explicit user response in chat",
-  "scope": "All order statuses",
-  "TotalAmount": "SUM(Quantity * OrderItems.UnitPrice), before discounts/refunds; tax and shipping excluded",
-  "TotalOrders": "COUNT(DISTINCT OrderID)",
-  "runtime": "NOT EXECUTED",
-  "live_deployment": false
-}

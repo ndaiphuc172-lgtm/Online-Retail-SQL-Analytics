@@ -17,4 +17,4 @@ Current rebuilt tests and supplied runtime evidence cover the objective's listed
 | Partial observation month | EDGE04 PASS with Sep 15 cutoff, actual G |
 | Below/equal/above 48/72/120-hour SLA | Nine targeted actual F assertions PASS; SLA01–10 math regression PASS |
 
-Files: runtime_fixtures.rpt, runtime_small_clean.txt, runtime_large_clean.txt, runtime_targeted_cohort_customer.txt, runtime_targeted_refund_sla_success.txt. These finite tests prove the specified fixtures, not arbitrary future data or production scalability. Invalid fixtures are rejected; two corrected harness failures are preserved separately.
+The full raw outputs are preserved in a separate local audit ZIP. [test_report.md](test_report.md) summarizes the observed results; executable regression/integration/targeted fixtures remain in tests/. These finite tests prove the specified fixtures, not arbitrary future data or production scalability. Corrected harness-failure history is retained in the audit archive rather than the portfolio.

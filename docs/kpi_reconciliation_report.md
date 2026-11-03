@@ -12,8 +12,6 @@ PHUCCOMPUTER; SQL Server 2022 version 16.0.1000.6; compatibility 160. New clean 
 
 Financial checks use exact documented cents without tolerance. Fixture net revenue is 1,090.97 USD because the fixture adds edge orders; it is not small-seed revenue.
 
-Authoritative clean logs: evidence/runtime_small_clean.txt, runtime_large_clean.txt. Verification: clean_run_validation.json; input manifest: clean_reproduction_manifest.json. Additional evidence: runtime_fixtures.rpt, runtime_performance.txt, runtime_live_metadata.txt, runtime_live_view_details.txt. Rerun and view tests are structured transcriptions of pasted chat output, identified as such; no fabricated original log files.
+Execution logs/provenance are retained in a separate local audit ZIP rather than this portfolio repository. The concise [test report](test_report.md) records the observed suites and their limits. Use the retained SQL tests to reproduce checks on a new authorized database.
 
-The older large-existing run contained Msg 102/53900/50001/51002. That historical mixed-result log is excluded from this final-only package; the later successful clean runs are the authoritative setup evidence. Separate _errors.txt streams were not supplied and are not fabricated.
-
-Core workflow passes; targeted edge-case validation is recorded in test_coverage_audit.md. Live view deployment is outside completed validation.
+Core workflow and targeted edge checks passed. See [test coverage](test_coverage_audit.md). Financial baselines are synthetic and do not describe a real retailer.

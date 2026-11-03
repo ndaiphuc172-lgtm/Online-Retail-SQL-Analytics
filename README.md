@@ -35,19 +35,15 @@ Validated on SQL Server 2022 (16.0.1000.6), compatibility 160. Use SSMS.
 
 Do not run both seeds or remove existing data to rerun setup. Files containing `:ON ERROR EXIT` require **Query > SQLCMD Mode** in that SSMS window. Run entire files, one connection per file.
 
-For separate disposable reproduction, `tools/clean_reproduction` contains the exact final small/large drivers used in clean tests, with fixed isolated database names and input-hash banners. They deliberately stop if the named database already exists.
-
 ## Validation
 
-Each clean seed passed 39 DQ checks, 11 baselines, 14 unique exact-cent KPI reconciliations and seven negative constraint tests. Further evidence covers 22 regression assertions, actual A–G fixtures, eight targeted cohort/customer and 13 refund/SLA assertions, safe rerun and six rollback-only legacy-view checks. See [completion evidence](docs/completion_gate.md), [test instructions](docs/testing.md) and [raw/structured evidence](evidence/README.md).
+Each clean seed passed 39 data-quality checks, 11 baselines, 14 unique exact-cent KPI reconciliations and seven negative constraint tests. Further checks cover 22 regression assertions, actual A–G fixtures, eight targeted cohort/customer and 13 refund/SLA assertions, plus safe reruns. See the [test report](docs/test_report.md), [test instructions](docs/testing.md) and [SQL lessons](docs/sql_lessons.md). Full execution logs are archived locally rather than included in this portfolio repository.
 
 ## Repository contents
 
 - `sql/`: eight final schema, seed and reporting scripts.
 - `tests/`: final preflight, integrity, reconciliation, regression and fixture scripts.
 - `docs/`: KPI definitions, dependencies, findings, performance and coverage.
-- `evidence/`: final successful outputs, source hashes and original-to-fixed diff.
-- `legacy_views/`: tested legacy-view fixes; not part of the clean schema workflow.
-- `tools/`: final fixture and clean-reproduction drivers only.
+- `tools/`: a standalone driver for regression and actual-module fixture checks.
 
-Legacy fixes were tested inside a transaction and rolled back. They have **not** been deployed to the original database. Legacy totals intentionally preserve all-status historical gross merchandise, distinct from A–G recognized net revenue. SLA thresholds are demo assumptions. Performance measurements have no before/after index claim; no production scalability or actual execution-plan evidence is implied.
+SLA thresholds are demo assumptions. Performance measurements have no before/after index claim; no production scalability or actual execution-plan evidence is implied. This portfolio focuses on the A–G reports; unrelated legacy-view remediation and full audit archives are retained outside the tracked project.

@@ -14,3 +14,15 @@ __pycache__/
 *.ldf
 Thumbs.db
 .DS_Store
+
+# Full local audit and delivery materials, excluded from the portfolio
+/SHA256SUMS.txt
+/package_manifest.json
+/evidence/
+/legacy_views/
+/tools/clean_reproduction/
+/docs/packaging_notes.md
+/docs/completion_gate.md
+/docs/repository_audit.md
+/docs/bug_backlog.md
+/docs/debugging_summary.md

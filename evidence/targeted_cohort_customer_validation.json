@@ -1,6 +1,0 @@
-{
-  "status": "PASS_OBSERVED",
-  "unique_assertions": 8,
-  "report_sha256": "dcc1b9a766daded5a53ae1c3f29496d9d0e92bdfb154b90665f7e99d633c1acf",
-  "evidence": "runtime_targeted_cohort_customer.txt"
-}
