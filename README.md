@@ -18,15 +18,13 @@ A reproducible SQL portfolio for revenue, payments, product performance, custome
 
 Net revenue, delivered orders, average order value, merchandise refunds and product performance.
 
-![Executive Overview](powerbi/executive-overview.png)
+![Executive Overview](power%20bi%20dash%20board%20screenshot/executive-overview.png)
 
 ### Operations & SLA
 
 Delivery SLA rates, delivery time and open-order backlog.
 
-![Operations & SLA](powerbi/operations-sla.png)
-
-[Download the Power BI report](Dashboard.pbix)
+![Operations & SLA](power%20bi%20dash%20board%20screenshot/operations-sla.png)
 
 ## Validated dataset results
 
