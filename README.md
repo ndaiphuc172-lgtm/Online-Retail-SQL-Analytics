@@ -12,6 +12,22 @@ A reproducible SQL portfolio for revenue, payments, product performance, custome
 | F — Fulfillment | Are orders shipped/delivered within demo SLA thresholds? |
 | G — Cohorts | How do retention and refund-adjusted revenue vary with acquisition cohort? |
 
+## Power BI Dashboard
+
+### Executive Overview
+
+Net revenue, delivered orders, average order value, merchandise refunds and product performance.
+
+![Executive Overview](powerbi/executive-overview.png)
+
+### Operations & SLA
+
+Delivery SLA rates, delivery time and open-order backlog.
+
+![Operations & SLA](powerbi/operations-sla.png)
+
+[Download the Power BI report](Dashboard.pbix)
+
 ## Validated dataset results
 
 | Metric | Small seed | Large seed |
