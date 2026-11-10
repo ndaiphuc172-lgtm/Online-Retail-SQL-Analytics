@@ -1,19 +1,17 @@
 ﻿:ON ERROR EXIT
 USE master;
 GO
-/* Generated integration harness: actual seven analysis modules and actual
-   reconciliation queries run against eleven session-local #Fixture tables.
-   No permanent object or user-data mutations. Connect to a verified SQL Server
-   with temp-table permission; SQLCMD -b, one connection for the whole file.
-   The controlled fixture defines its own coverage through 2026-10-01 UTC; this
-   is NOT a coverage claim for the user's small dataset or a business decision.
+/*Actual seven analysis modules and actual reconciliation queries run against eleven session-local #Fixture tables.
+
+  No permanent object or user-data mutations. Connect to a verified SQL Server with temp-table permission; SQLCMD -b, one connection for the whole file.
+
+   The controlled fixture defines its own coverage through 2026-10-01 UTC; this is NOT a coverage claim for the user's small dataset or a business decision.
+
    Same column definitions, CHECK/unique constraints and computed amounts as DDL.
-   Foreign keys are omitted because SQL Server does not enforce FKs on temporary
-   tables; actual orphan and workflow checks run explicitly before reports.
-   Constraint enforcement on real schema is separately tested by the guarded
-   constraint_failure_checks.sql. B03 corrections are included; exact-cent reconciliation must pass.
-   This regenerated harness has not yet been executed on SQL Server.
-   Regenerate after module edits; never modify the generated SQL independently.
+
+   Foreign keys are omitted because SQL Server does not enforce FKs on temporary tables; actual orphan and workflow checks run explicitly before reports.
+
+   Constraint enforcement on real schema is separately tested by the guarded constraint_failure_checks.sql. B03 corrections are included; exact-cent reconciliation must pass.
 */
 SET NOCOUNT ON;
 DROP TABLE IF EXISTS #FixtureCategories;
@@ -299,23 +297,16 @@ SET XACT_ABORT ON;
 GO
 
 /*
-    Online Retail Portfolio - Small Demo Seed
-    Purpose:
-      - Lightweight dataset for GitHub reviewers to clone and run quickly.
-      - Shows the core business flow: orders, payments, cancellation, delivery,
-        returns, full refund, partial refund, rejection, and pending states.
-
+Small Demo Seed
+Purpose: Lightweight dataset for GitHub reviewers to clone and run quickly.
     Recommended order:
       1. Run OnlineRetail - Schema.sql
       2. Run this file on an empty OnlineRetailDB
-
     Notes:
       - This file intentionally avoids DELETE/TRUNCATE so reviewers do not
         accidentally remove existing work.
       - Full analytical volume should live in a separate optional seed file.
 */
-
-
 
 IF @@TRANCOUNT <> 0
     THROW 51003, 'Run seed in a fresh session without a transaction.', 1;
@@ -972,28 +963,9 @@ GO
 
 
 GO
-/*=============================================================================
-  PORTFOLIO PROJECT: ONLINE RETAIL ANALYTICS
-  STEP 4.5 - RETURN AND REFUND PERFORMANCE
-
-  SQL dialect : Microsoft SQL Server
-  Database    : OnlineRetailDB
-
-  OUTPUTS
-  1. Monthly return/refund KPIs by order cohort and sales channel.
-  2. Inspection and refund-decision outcomes.
-  3. Return-reason analysis.
-  4. Product return-risk ranking.
-
-  BUSINESS RULES
-  - Sales denominators include Delivered orders only.
-  - A physical return requires Returns.ReceivedAt IS NOT NULL.
-  - Only RefundStatus='Completed' is treated as money refunded.
-  - Refund rates use tax-inclusive merchandise payable as denominator because
-    Refunds.Amount includes refunded merchandise tax and excludes shipping.
-  - Returns/refunds are attributed to the original order month (cohort view).
+/* =============================================================================
+   RETURN AND REFUND PERFORMANCE
 =============================================================================*/
-
 
 GO
 SET NOCOUNT ON;
@@ -1279,36 +1251,11 @@ SELECT *,DENSE_RANK() OVER
 FROM ProductRates
 ORDER BY ProductReturnRiskRank,ProductID;
 
--- Deferred fixture cleanup: #ReturnItemFacts
--- Deferred fixture cleanup: #DeliveredOrderFacts
-GO
-
-/* DEMO EXPECTATIONS
-   - February App: full refund, refund-to-payable rate 100%.
-   - March Website: partial refund 38.88 / 64.80 = 60%.
-   - August App: physical return exists but refund is rejected, so refund=0.
-   - Shoes, backpack and earbuds each have a 100% physical unit return rate;
-     the small sample size must be considered before business action.
-*/
 
 GO
+
 /*=============================================================================
-  PORTFOLIO PROJECT: ONLINE RETAIL ANALYTICS
-  STEP 4.6 - FULFILLMENT AND DELIVERY PERFORMANCE
-
-  SQL dialect : Microsoft SQL Server
-  Database    : OnlineRetailDB
-
-  DEMO SLA ASSUMPTIONS
-  - Order to shipment : <= 48 hours
-  - Shipment to delivery: <= 72 hours
-  - Order to delivery : <= 120 hours
-
-  OUTPUTS
-  1. Monthly fulfillment KPIs by order cohort and channel.
-  2. Overall channel comparison and performance ranking.
-  3. Open-order backlog and SLA risk.
-  4. Average time spent in each order status.
+FULFILLMENT AND DELIVERY PERFORMANCE
 =============================================================================*/
 
 
@@ -1547,17 +1494,11 @@ ORDER BY SalesChannel,
     CASE OrderStatus WHEN 'Pending' THEN 1 WHEN 'Processing' THEN 2
          WHEN 'Shipped' THEN 3 ELSE 4 END;
 
--- Deferred fixture cleanup: #FulfillmentFacts
 GO
 
-/* DEMO INTERPRETATION
-   - Delivered demo orders satisfy the 48/72/120-hour SLA assumptions.
-   - The May Shipped order appears as delivery overdue.
-   - The June Processing and July Pending orders appear as shipment overdue.
-   - @AnalysisAsOf is the latest order/status event in the demo, so results are
-     reproducible. Replace it with SYSUTCDATETIME() for a live operation view.
-*/
 
+
+   
 GO
 
 INSERT #EdgeAssertions
